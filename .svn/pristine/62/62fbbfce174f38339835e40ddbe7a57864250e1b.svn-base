@@ -1,0 +1,61 @@
+//
+//  UserShareInfo.h
+//  KaiStory
+//
+//  Created by mac on 15/3/25.
+//  Copyright (c) 2015年 gaoxinfei. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import "UserInfo.h"
+#import "StoryModel.h"
+#import "KSAlbumModel.h"
+
+@interface UserShareInfo : NSObject
+@property (nonatomic,strong)UserInfo *m_UserInfoItem;
+@property (nonatomic,strong)NSMutableArray *historyList;
+@property (nonatomic,strong)NSMutableArray *lovedStoryArray;
+@property (nonatomic,strong)NSMutableArray *lovedAlbumArray;
+@property (nonatomic,strong)NSMutableArray *lovedDailyArray;
+
+
++ (UserShareInfo *)sharedSingleton;
+
+- (void) addLoveStory:(StoryModel*)storyItem;
+- (void) removeLoveStory:(NSString*)storyId;
+
+- (void)loadLovedStoryArray;
+- (void)saveLovedStoryArray;
+
+- (void) addLoveAlbum:(KSAlbumModel*)albumItem;
+- (void) removeLoveAlbum:(NSString*)ablumId;
+
+- (void)loadLovedAlbumArray;
+- (void)saveLovedAlbumArray;
+
+- (void) addLoveDaily:(NSString*)dailyUrl;
+- (void) removeLoveDaily:(NSString*)dailyUrl;
+
+- (void)loadLovedDailyArray;
+- (void)saveLovedDailyArray;
+
+- (void)addHistoryItem:(NSString*)storyId;
+- (void)removeFromHistoryList:(NSUInteger)indexInList;
+- (void)loadHistoryList;
+- (void)saveHistoryList;
+
+- (void)loadStoryListenInfo;
+@property (nonatomic) NSInteger storyListenCount;
+- (void)addStoryListenCount;
+@property (nonatomic) NSInteger storyListenSecond;
+- (void)addStoryListenSecond:(NSInteger)second;
+@property (nonatomic) NSInteger storyLastListenDate;
+@property (nonatomic) NSInteger storyListenDay;
+- (void)addStoryListenDay;
+
+
+- (void)savePreferences;
+- (UserInfo*)loadPreferences;
+
+
+@end

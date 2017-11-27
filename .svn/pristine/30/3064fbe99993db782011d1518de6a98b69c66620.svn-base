@@ -1,0 +1,22 @@
+//
+//  CategoryCellCollectionViewCell.h
+//  KaiStory
+//
+//  Created by mac on 15/4/1.
+//  Copyright (c) 2015年 gaoxinfei. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface CategoryCellCollectionViewCell : UICollectionViewCell{
+    UIButton * detailBt;
+    UIImageView *imageview ;
+
+}
+
+@property(strong,nonatomic)UIImageView *imgeView;
+@property(strong,nonatomic)UIView *partyView;
+@property(strong,nonatomic)UIView *labeview;
+@property(assign,nonatomic)BOOL isSelect;
+@property(strong,nonatomic)UIImageView*selectImage;
+@end

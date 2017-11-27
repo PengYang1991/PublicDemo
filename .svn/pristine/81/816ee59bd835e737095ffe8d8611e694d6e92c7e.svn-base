@@ -1,0 +1,121 @@
+//
+//  CustomizedViewController.m
+//  KaiStory
+//
+//  Created by yangpeng on 15/4/27.
+//  Copyright (c) 2015年 gaoxinfei. All rights reserved.
+//
+
+#import "CustomizedViewController.h"
+#import "Tools.h"
+#import "UIColor+HexStringToColor.h"
+#import "customViewsCell.h"
+@interface CustomizedViewController ()
+
+@end
+
+@implementation CustomizedViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.view.backgroundColor = [UIColor ColorWithHexString:@"e4f2ee"];
+    [self creatui];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+}
+
+-(void)backBtnAction:(id)sender{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+- (void)creatui{
+
+    NSInteger bttop = 76+64;
+    NSInteger btleft = 30;
+    NSInteger btwidth = 565;
+    NSInteger btheight = 73;
+    NSInteger lablesize = 38;
+    UIButton *addstroy = [UIButton buttonWithType:UIButtonTypeCustom];
+    addstroy.frame = CGRectMake(btleft*RESIZE_RATIO,
+                                bttop*RESIZE_RATIO,
+                                btwidth*RESIZE_RATIO,
+                                btheight*RESIZE_RATIO);
+    
+    [addstroy setBackgroundImage:[UIImage imageNamed:@"xuangushipng"] forState:UIControlStateNormal];
+    [addstroy setTitle:@"定制故事" forState:UIControlStateNormal];
+    addstroy .titleLabel.font = [UIFont systemFontOfSize:lablesize*RESIZE_RATIO];
+    [self.view addSubview:addstroy];
+    [addstroy addTarget:self action:@selector(addActions:) forControlEvents:UIControlEventTouchUpInside];
+
+    NSInteger imleft = 40;
+    NSInteger imtop = bttop+40+btheight;
+    NSInteger imwidth = 561;
+    NSInteger imheight = 421;
+    imageviews = [[UIImageView alloc]initWithFrame:CGRectMake(imleft*RESIZE_RATIO,
+                                                                           imtop*RESIZE_RATIO,
+                                                                           imwidth*RESIZE_RATIO,
+                                                                           imheight*RESIZE_RATIO)];
+    
+    imageviews.image = [UIImage imageNamed:@"gushikuang"];
+    imageviews.userInteractionEnabled = YES;
+    [self creatlsitView];
+    [self.view addSubview:imageviews];
+    
+    NSInteger sleeppoem = imtop+80+imheight;
+    NSInteger sleepleft = 40;
+    NSInteger  sleepwidth = 561;
+    NSInteger sleepheight  = 211;
+    UIImageView *sleepPoem = [[UIImageView alloc]initWithFrame:CGRectMake(sleepleft*RESIZE_RATIO,
+                                                                           sleeppoem*RESIZE_RATIO,
+                                                                           sleepwidth*RESIZE_RATIO,
+                                                                           sleepheight*RESIZE_RATIO)];
+    
+    sleepPoem.image = [UIImage imageNamed:@"shikuang"];
+    sleepPoem.userInteractionEnabled = YES;
+    [self.view addSubview:sleepPoem];
+    
+    
+}
+
+
+
+- (void)addActions:(id)sender{
+
+
+
+}
+- (void)creatlsitView{
+    NSInteger  listlft = 20;
+    NSInteger  listtop = 26;
+    NSInteger  listwidth =531-18;
+    NSInteger  listheight = 322;
+    self.stroylist = [[UITableView alloc]initWithFrame:CGRectMake(listlft*RESIZE_RATIO,
+                                                                  listtop*RESIZE_RATIO,
+                                                                  listwidth*RESIZE_RATIO,
+                                                                  listheight*RESIZE_RATIO)
+                                                                   style:UITableViewStylePlain];
+    
+    self.stroylist.backgroundColor = [UIColor redColor];
+    self.stroylist.delegate  = self;
+    self.stroylist.dataSource = self;
+    [imageviews addSubview:self.stroylist];
+
+
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+
+    return 0;
+}
+
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+
+    return nil;
+}
+
+
+
+
+@end

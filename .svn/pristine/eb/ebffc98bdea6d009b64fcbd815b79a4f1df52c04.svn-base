@@ -1,0 +1,78 @@
+//
+//  DefineControllerViewController.m
+//  KaiStory
+//
+//  Created by yangpeng on 15/4/21.
+//  Copyright (c) 2015年 gaoxinfei. All rights reserved.
+//
+
+#import "DefineControllerViewController.h"
+#import "Tools.h"
+#import "UIColor+HexStringToColor.h"
+#import "CategoryViewController.h"
+@interface DefineControllerViewController ()
+
+@end
+
+@implementation DefineControllerViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.view.backgroundColor = [UIColor ColorWithHexString:@"e4f2ee"];
+    [self creatsleepAction];
+ }
+-(void)backBtnAction:(id)sender{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+-(void)creatsleepAction{
+    
+    NSInteger bttop = 76+64;
+    NSInteger btleft = 30;
+    NSInteger btwidth = 565;
+    NSInteger btheight = 73;
+    NSInteger lablesize = 38;
+    UIButton *addstroy = [UIButton buttonWithType:UIButtonTypeCustom];
+    addstroy.frame = CGRectMake(btleft*RESIZE_RATIO,
+                                bttop*RESIZE_RATIO,
+                                btwidth*RESIZE_RATIO,
+                                btheight*RESIZE_RATIO);
+    
+    [addstroy setBackgroundImage:[UIImage imageNamed:@"xuangushipng"] forState:UIControlStateNormal];
+    [addstroy setTitle:@"添加故事" forState:UIControlStateNormal];
+    addstroy .titleLabel.font = [UIFont systemFontOfSize:lablesize*RESIZE_RATIO];
+    [self.view addSubview:addstroy];
+    [addstroy addTarget:self action:@selector(addActions:) forControlEvents:UIControlEventTouchUpInside];
+
+    NSInteger imtop =bttop +40+73;
+    NSInteger imleft = 40;
+    NSInteger imwidth = 565;
+    NSInteger imheight = 421;
+    
+    UIImageView *imageViews = [[UIImageView alloc]initWithFrame:CGRectMake(imleft*RESIZE_RATIO,
+                                                                           imtop*RESIZE_RATIO,
+                                                                           imwidth*RESIZE_RATIO,
+                                                                           imheight*RESIZE_RATIO)];
+    imageViews.image = [UIImage imageNamed:@"gushikuang"];
+    
+    [self.view addSubview:imageViews];
+
+
+}
+- (void)addActions:(id)sender{
+    CategoryViewController *category = [[CategoryViewController alloc]initWithConfig:@"哄睡" withBackBtn:YES];
+    [self.navigationController pushViewController:category animated:YES];
+
+
+}
+
+
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+
+}
+
+
+@end

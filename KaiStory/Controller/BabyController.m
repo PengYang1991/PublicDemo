@@ -1,0 +1,143 @@
+//
+//  BabyController.m
+//  KaiStory
+//
+//  Created by yanzehua on 15/4/18.
+//  Copyright (c) 2015年 gaoxinfei. All rights reserved.
+//
+
+#import "BabyController.h"
+#import "Tools.h"
+#import "NotLoginView.h"
+#import "LoginView.h"
+#import "LoginController.h"
+#import "PlayInfoView.h"
+#import "UIColor+HexStringToColor.h"
+#import "ThreeLinesView.h"
+#import "FeedBackController.h"
+#import "BabyFavorController.h"
+#import "BabyHistoryController.h"
+#import "ContextMenuView.h"
+#import "BabyDownloadController.h"
+
+
+@implementation BabyController
+
+-(void) initLayout
+{
+    int infoViewHeight = 220;
+
+    int playInfoViewMarginTop = infoViewHeight;
+    int playInfoViewHeight = 172;
+    self.playInfoView = [[PlayInfoView alloc] initWithFrame:CGRectMake(0, playInfoViewMarginTop*RESIZE_RATIO, FRAME_WIDTH, playInfoViewHeight*RESIZE_RATIO)];
+    [self.contentView addSubview:self.playInfoView];
+
+    int const infoMarginLeft = 20;
+    int infoFirstMarginTop = playInfoViewMarginTop + playInfoViewHeight;
+    int const infoWidth = 600;
+    int const infoHeight = 267;
+    
+    NSArray* firstLabelArray =[[NSArray alloc] initWithObjects:@"宝贝喜欢",@"宝贝下载",@"播放记录",nil];
+    NSArray* firstIconArray = [[NSArray alloc] initWithObjects:@"宝贝喜欢",@"宝贝下载",@"播放记录",nil];
+    ThreeLinesView *firstInfoView = [[ThreeLinesView alloc]initWithFrameRect:CGRectMake(infoMarginLeft*RESIZE_RATIO, infoFirstMarginTop*RESIZE_RATIO, infoWidth*RESIZE_RATIO, infoHeight*RESIZE_RATIO) withLabelArray:firstLabelArray withIconArray:firstIconArray withTailIcon:@"右指向"];
+    [self.contentView addSubview:firstInfoView];
+    [[firstInfoView.btnArray objectAtIndex:0] addTarget:self action:@selector(babyLoveAction:) forControlEvents:UIControlEventTouchUpInside];
+    [[firstInfoView.btnArray objectAtIndex:1] addTarget:self action:@selector(babyDownloadAction:) forControlEvents:UIControlEventTouchUpInside];
+     [[firstInfoView.btnArray objectAtIndex:2] addTarget:self action:@selector(babyRecordAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    NSArray* secondLabelArray =[[NSArray alloc] initWithObjects:@"宝贝设置",@"意见反馈",@"推荐APP",nil];
+    NSArray* secondIconArray = [[NSArray alloc] initWithObjects:@"宝贝设置",@"意见反馈",@"推荐APP",nil];
+    int infoSecondMarginTop = infoFirstMarginTop + 26 + infoHeight;
+    ThreeLinesView *secondInfoView = [[ThreeLinesView alloc]initWithFrameRect:CGRectMake(infoMarginLeft*RESIZE_RATIO, infoSecondMarginTop*RESIZE_RATIO, infoWidth*RESIZE_RATIO, infoHeight*RESIZE_RATIO) withLabelArray:secondLabelArray withIconArray:secondIconArray withTailIcon:@"右指向"];
+    [self.contentView addSubview:secondInfoView];
+    [[secondInfoView.btnArray objectAtIndex:0] addTarget:self action:@selector(babySetAction:) forControlEvents:UIControlEventTouchUpInside];
+    [[secondInfoView.btnArray objectAtIndex:1] addTarget:self action:@selector(babyFeedbackAction:) forControlEvents:UIControlEventTouchUpInside];
+    [[secondInfoView.btnArray objectAtIndex:2] addTarget:self action:@selector(babyShareAction:) forControlEvents:UIControlEventTouchUpInside];
+
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    int infoViewHeight = 220;
+    NSUserDefaults *userDeFaults = [NSUserDefaults standardUserDefaults];
+    NSString *logStatus = [userDeFaults objectForKey:@"loginStatus"];
+    int loginState = [logStatus intValue];
+    if(1 == loginState)
+    {
+        LoginView* loginView = [[LoginView alloc] initWithFrame:CGRectMake(0, 0, FRAME_WIDTH, infoViewHeight*RESIZE_RATIO)];
+        [self.contentView addSubview:loginView];
+        
+    }
+    else
+    {
+        NotLoginView* notLoginView = [[NotLoginView alloc] initWithFrame:CGRectMake(0, 0, FRAME_WIDTH, infoViewHeight*RESIZE_RATIO)];
+        [notLoginView.loginBtn addTarget:self action:@selector(loginAction) forControlEvents:UIControlEventTouchUpInside];
+        [self.contentView addSubview:notLoginView];
+        
+    }
+    int storyNum = (int)[userDeFaults integerForKey:@"STORY_LISTEN_COUNT"];
+    int dayNum = (int)[userDeFaults integerForKey:@"STORY_LISTEN_DAY"]  ;
+    int minutesNum = (int)([userDeFaults integerForKey:@"STORY_LISTEN_SECOND"]/60) ;
+    [self.playInfoView setPlayInfo:storyNum dayNum:dayNum hourNum:minutesNum];
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.contentView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 64, FRAME_WIDTH, FRAME_HEIGHT)];
+    self.contentView.backgroundColor = [UIColor ColorWithHexString:@"e2f2ee"];
+    self.contentView.contentSize = CGSizeMake(FRAME_WIDTH, FRAME_HEIGHT+100);
+    [self initLayout];
+    [self.view addSubview:self.contentView];
+   }
+
+
+- (void)loginAction
+{
+    LoginController *loginController = [[LoginController alloc]initWithConfig:@"登陆" withBackBtn:YES];
+    [self presentViewController:loginController animated:YES completion:^{
+    }];
+}
+
+-(void)babyLoveAction:(id)sender
+{
+    BabyFavorController *favorController = [[BabyFavorController alloc]initWithConfig:@"宝贝喜欢" withBackBtn:YES withFootBar:YES];
+    [self presentViewController:favorController animated:YES completion:^{
+    }];
+}
+
+
+-(void)babyDownloadAction:(id)sender
+{
+    BabyDownloadController *downloaderController = [[BabyDownloadController alloc]initWithConfig:@"宝贝下载" withBackBtn:YES withFootBar:YES];
+    [self presentViewController:downloaderController animated:YES completion:^{
+    }];
+}
+
+-(void)babyRecordAction:(id)sender
+{
+    BabyHistoryController *historyController = [[BabyHistoryController alloc]initWithConfig:@"播放记录" withBackBtn:YES withFootBar:YES];
+    [self presentViewController:historyController animated:YES completion:^{
+    }];
+}
+
+-(void)babySetAction:(id)sender
+{
+    NSLog(@"babySet");
+}
+
+-(void)babyFeedbackAction:(id)sender
+{
+    NSLog(@"babyFeedback");
+    FeedBackController* feedBackController = [[FeedBackController alloc] initWithConfig:@"意见反馈" withBackBtn:YES withFootBar:YES];
+    [self presentViewController:feedBackController animated:YES completion:^{
+    }];
+
+}
+
+-(void)babyShareAction:(id)sender
+{
+    NSLog(@"babyShare");
+}
+
+@end

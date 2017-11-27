@@ -1,0 +1,146 @@
+//
+//  CategoryCellCollectionViewCell.m
+//  KaiStory
+//
+//  Created by mac on 15/4/1.
+//  Copyright (c) 2015年 gaoxinfei. All rights reserved.
+//
+
+#import "CategoryCellCollectionViewCell.h"
+#import "Tools.h"
+@implementation CategoryCellCollectionViewCell
+
+- (void)awakeFromNib {
+    
+}
+-(id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.backgroundColor = [UIColor purpleColor];
+        [self creatstoryBackgroundView];
+    }
+    return  self;
+}
+
+- (void)creatstoryBackgroundView{
+    NSInteger width = 276;
+    NSInteger height = 240;
+    self.imgeView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0,
+                                                                 width*RESIZE_RATIO,
+                                                                 height*RESIZE_RATIO)];
+    [self addSubview:self.imgeView];
+    NSInteger top = 240;
+    NSInteger heights = 90;
+    self.partyView = [[UIView alloc]initWithFrame:CGRectMake(0, top*RESIZE_RATIO,
+                                                               width*RESIZE_RATIO,
+                                                               heights*RESIZE_RATIO)];
+    
+    self.partyView.backgroundColor = [UIColor whiteColor];
+    [self addSubview:self.partyView];
+    
+    
+    NSInteger btleft = 218;
+    NSInteger bttop = 20;
+    NSInteger widths = 48;
+    NSInteger heightbt = 49;
+    
+    detailBt = [UIButton buttonWithType:UIButtonTypeCustom];
+    detailBt.frame = CGRectMake(btleft*RESIZE_RATIO,
+                               bttop*RESIZE_RATIO,
+                               widths*RESIZE_RATIO,
+                               heightbt*RESIZE_RATIO);
+    [detailBt setTitle:@"我的最爱" forState:UIControlStateNormal];
+    [detailBt setBackgroundImage:[UIImage imageNamed:@"kaishushuo"] forState:UIControlStateNormal];
+    [detailBt setTitle:@"" forState:UIControlStateNormal];
+    [detailBt setBackgroundImage:[UIImage imageNamed:@"kaishushuoweidianji(1)"] forState:UIControlStateSelected];
+    [self addSubview:detailBt];
+    [detailBt addTarget:self action:@selector(detailAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self initTextField];
+    
+    NSInteger imleft = 0;
+    NSInteger imtop = 0;
+    NSInteger imwidth = 278;
+    NSInteger imheight= 330;
+    self.selectImage = [[UIImageView alloc]initWithFrame:CGRectMake(imleft*RESIZE_RATIO,
+                                                                    imtop*RESIZE_RATIO,
+                                                                    imwidth*RESIZE_RATIO,
+                                                                    imheight*RESIZE_RATIO)];
+    
+    self.selectImage.userInteractionEnabled = YES;
+    self.selectImage.image = [UIImage imageNamed:@"xuanzhongzhezhao"];
+    NSInteger rightleft = 80;
+    NSInteger righttop = 108;
+    NSInteger rightwidth = 126;
+    NSInteger rightheight = 86;
+    imageview = [[UIImageView alloc]initWithFrame:CGRectMake(rightleft*RESIZE_RATIO,
+                                                             righttop*RESIZE_RATIO,
+                                                             rightwidth*RESIZE_RATIO, rightheight*RESIZE_RATIO)];
+    imageview.userInteractionEnabled = YES;
+    imageview.image = [UIImage imageNamed:@"xuanzhongduigou"];
+    [self.selectImage addSubview:imageview];
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(cancelAction:)];
+    [self.selectImage addGestureRecognizer:tap];
+    [self insertSubview:self.selectImage aboveSubview:detailBt];
+    self.selectImage.hidden = YES;
+
+   
+}
+
+- (void)detailAction:(id)sender{
+    UIButton * detailButton = (UIButton*)sender;
+    detailButton.selected = !detailButton.selected;
+    if (detailButton.selected) {
+//        imageview.hidden = NO;
+        self.labeview.hidden = NO;
+        
+    }else {
+    
+        self.labeview.hidden = YES;
+//        imageview.hidden = YES;
+      
+    }
+}
+- (void)initTextField{
+    NSInteger laleft = 0;
+    NSInteger latop = 36;
+    NSInteger width = 276;
+    NSInteger height = 290;
+
+    self.labeview = [[UIView alloc]initWithFrame:CGRectMake(laleft*RESIZE_RATIO,
+                                                            latop*RESIZE_RATIO,
+                                                            width*RESIZE_RATIO,
+                                                            height*RESIZE_RATIO)];
+    self.labeview .backgroundColor = [UIColor redColor];
+    [self insertSubview:self.labeview belowSubview:detailBt];
+    self.labeview.hidden = YES;
+ 
+}
+-(void)setSelected:(BOOL)selected{
+    if (selected) {
+        [self selectImageView:selected];
+    }else{
+    
+        return;
+    
+    }
+
+}
+- (void)selectImageView:(BOOL)select{
+    if (select) {
+        self.selectImage.hidden = NO;
+        
+    }else{
+    
+        self.selectImage.hidden = YES;
+        }
+}
+
+- (void)cancelAction:(id)sender{
+        self.selectImage.hidden = YES;
+
+
+}
+
+
+@end

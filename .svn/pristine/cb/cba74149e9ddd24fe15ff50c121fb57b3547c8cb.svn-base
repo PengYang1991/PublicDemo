@@ -1,0 +1,138 @@
+//
+//  ClassListVIew.m
+//  KaiStory
+//
+//  Created by mac on 15/4/14.
+//  Copyright (c) 2015年 gaoxinfei. All rights reserved.
+//
+
+#import "ClassListVIew.h"
+#import "ClassModel.h"
+#import "UIColor+HexStringToColor.h"
+#import "Tools.h"
+
+@implementation ClassListVIew
+
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+-(id)initWithFrameRect:(CGRect)frame dataSource:(ClassModel *)data :(NSInteger)Index{
+    if (self = [super initWithFrame:frame]) {
+
+    
+        self.location = frame.origin.y;
+        
+        NSString *color1=@"#d1eae2";
+        NSString *color2=@"#eef6f4";
+        UIColor *Color1 = [UIColor ColorWithHexString:color1];
+        UIColor *Color2 = [UIColor ColorWithHexString:color2];
+        
+        
+        if (Index%2) {
+            [self setBackgroundColor:Color1];
+        }else{
+            [self setBackgroundColor:Color2];
+        }
+        
+        
+        self.RightBtnArray = [NSMutableArray array];
+        
+        
+    
+        
+        
+        
+        int const ClassWidth = 7;
+        int const ClassHight = 25;
+        int const top = 25;
+        int const left = 20;
+        UIImageView *biaozhuview = [[UIImageView alloc]initWithFrame:CGRectMake(left*RESIZE_RATIO, top*RESIZE_RATIO, ClassWidth*RESIZE_RATIO, ClassHight*RESIZE_RATIO)];
+        [biaozhuview setImage:[UIImage imageNamed:@"分类柱.png"]];
+        [self addSubview:biaozhuview];
+
+//        self.lefBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        int const leftwidth = left +biaozhuview.frame.size.width +10;
+        int const topheight = 8;
+        NSString *leftColor = @"#4ab19a";
+        UIColor *color = [UIColor ColorWithHexString:leftColor];
+        [self.lefBtn setTextColor:color];
+        self.lefBtn.font =[UIFont systemFontOfSize:12*RESIZE_RATIO];
+        self.lefBtn = [[UILabel alloc]initWithFrame:CGRectMake(leftwidth*RESIZE_RATIO, topheight*RESIZE_RATIO, 100, 30)];
+        [self addSubview:self.lefBtn];
+        
+        
+        
+        self.rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        
+        int const rightwidth =700;
+        int const right =25;
+        int const height =30;
+        
+        
+        NSLog(@"FrameWidth============%f",self.frame.size.width);
+        
+        self.rightBtn = [[UIButton alloc]initWithFrame:CGRectMake(right*RESIZE_RATIO, 30*RESIZE_RATIO, rightwidth*RESIZE_RATIO, height*RESIZE_RATIO)];
+        [self.rightBtn addTarget:self action:@selector(ISDisplay:) forControlEvents:UIControlEventTouchUpInside];
+//        [self.rightBtn setImage:[UIImage imageNamed:@"合并.png"] forState:UIControlStateNormal];
+//        [self.rightBtn setImage:[UIImage imageNamed:@"点开.png"] forState:UIControlStateSelected];
+//        [self.rightBtn setBackgroundColor:[UIColor redColor]];
+        self.rightBtn.tag = Index;
+        [self addSubview:self.rightBtn];
+        
+        [self.RightBtnArray addObject:self.rightBtn];
+        
+        UIButton *selectBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, frame.size.width,frame.size.height)];
+        selectBtn.tag = Index;
+        [selectBtn addTarget:self action:@selector(ISDisplay:) forControlEvents:UIControlEventTouchUpInside];
+        
+        
+        self.rightBtnView = [[UIImageView alloc]initWithFrame:CGRectMake(570*RESIZE_RATIO, 0*RESIZE_RATIO, 17*RESIZE_RATIO, 17*RESIZE_RATIO)];
+        [self.rightBtn addSubview:self.rightBtnView];
+        
+        
+        if (Index ==0 || Index==1) {
+            [self.rightBtnView setImage:[UIImage imageNamed:@"点开.png"]];
+        }else{
+           
+             [self.rightBtnView setImage:[UIImage imageNamed:@"合并.png"]];
+        }
+        
+        
+      
+        self.lefBtn.text =data.show_category_name;
+        NSLog(@"北京=========%@",data.show_category_name);
+    }
+    return self;
+
+}
+
+
+-(void)ISDisplay:(id)sender{
+    UIButton *button = (UIButton *)sender;
+    NSLog(@"Button Click State %d for Button %ld", button.selected, button.tag);
+    button.selected =!button.selected;
+    NSString *Index = [NSString stringWithFormat:@"%ld",button.tag];
+    
+    if (button.selected) {
+        NSLog(@"Selected==============");
+   
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"DisplayPorperty" object:Index];
+        [self.rightBtnView setImage:[UIImage imageNamed:@"点开.png"]];
+    }else
+    {
+        NSLog(@"UNSelected==============");
+    
+
+        [self.rightBtnView setImage:[UIImage imageNamed:@"合并.png"]];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"HidenPorperty" object:Index];
+    }
+  
+    
+}
+
+@end

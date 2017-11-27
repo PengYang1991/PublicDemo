@@ -1,0 +1,29 @@
+//
+//  LunBoWebController.m
+//  KaiStory
+//
+//  Created by yanzehua on 15/5/8.
+//  Copyright (c) 2015年 kaishu. All rights reserved.
+//
+
+#import "LunBoWebController.h"
+#import "Tools.h"
+
+
+@implementation LunBoWebController
+
+-(void) viewDidLoad
+{
+    [super viewDidLoad];
+    self.webView = [[UIWebView alloc]initWithFrame:CGRectMake(0,0,FRAME_WIDTH,
+                                                           [self getContentHeight])];
+    NSURLRequest *request =[NSURLRequest requestWithURL:[NSURL URLWithString:self.destUrl]];
+    [self.baseContentView addSubview:self.webView];
+    [self.webView loadRequest:request];
+}
+
+-(void)backBtnAction:(id)sender{
+    [self dismissViewControllerAnimated:YES completion:^(){}];
+}
+
+@end

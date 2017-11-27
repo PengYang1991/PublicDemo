@@ -1,0 +1,116 @@
+//
+//  BabyDownloadListCell.m
+//  KaiStory
+//
+//  Created by yanzehua on 15/5/5.
+//  Copyright (c) 2015年 kaishu. All rights reserved.
+//
+
+#import "BabyDownloadListCell.h"
+#import "Tools.h"
+#import "StoryModel.h"
+#import "UIColor+HexStringToColor.h"
+#import "UIImageView+WebCache.h"
+#import "AudioPlayManager.h"
+
+@implementation BabyDownloadListCell
+
+-(void)setModel:(id)inputData
+{
+    self.data = inputData;
+    StoryModel* storyItem =(StoryModel*)self.data;
+    [self.coverImgView sd_setImageWithURL:[NSURL URLWithString:storyItem.icon_url]];
+    self.mainLabel.text = storyItem.name;
+    self.subLabel.text = storyItem.duration;
+}
+
+-(void) setDownloadInfo:(DownloadItem*) inputItem
+{
+    self.dowloadItem = inputItem;
+    if(KS_FINISH == self.dowloadItem.downloadState)
+    {
+        [self.progressLabel removeFromSuperview];
+        [self.progressBaseView removeFromSuperview];
+        [self.progressUpView removeFromSuperview];
+    }else if(KS_DOWNLOADING == self.dowloadItem.downloadState)
+    {
+        CGFloat progress = ((float) inputItem.finishedBytes*100)/inputItem.totalBytes;
+        [self setProgress:(NSInteger)progress];
+    }else if(KS_PAUSING == self.dowloadItem.downloadState)
+    {
+        CGFloat progress = ((float) inputItem.finishedBytes*100)/inputItem.totalBytes;
+        [self setProgress:(NSInteger)progress];
+        self.progressLabel.text = [NSString stringWithFormat:@"%ld%%已暂停",(NSInteger)progress];
+    }else if(KS_WAITING == self.dowloadItem.downloadState)
+    {
+        CGFloat progress = ((float) inputItem.finishedBytes*100)/inputItem.totalBytes;
+        [self setProgress:(NSInteger)progress];
+        self.progressLabel.text = [NSString stringWithFormat:@"%ld%%排队中",(NSInteger)progress];
+    }
+}
+
+-(void) setProgress:(NSInteger)progress
+{
+    if(progress == 100)
+    {
+        [self.progressLabel removeFromSuperview];
+        [self.progressBaseView removeFromSuperview];
+        [self.progressUpView removeFromSuperview];
+    }
+    else
+    {
+        int marginLeft = 220;
+        int marginTop = 140;
+        int viewWidth = (int)progress * 200/100;
+        int viewHeight = 10;
+        self.progressUpView.frame = CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, viewWidth*RESIZE_RATIO,viewHeight*RESIZE_RATIO );
+        self.progressLabel.text = [NSString stringWithFormat:@"%ld%%",progress];
+    }
+}
+
+
+-(void)initLayout:(CGRect)frame
+{
+    [super initLayout:frame];
+
+    int marginLeft = 220;
+    int marginTop = 140;
+    int viewWidth = 200;
+    int viewHeight = 10;
+    self.progressBaseView = [[UIView alloc] initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, viewWidth*RESIZE_RATIO,viewHeight*RESIZE_RATIO )];
+    [self.progressBaseView setBackgroundColor:[UIColor ColorWithHexString:@"dddddd"]];
+    
+    self.progressUpView = [[UIView alloc] initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, viewWidth*RESIZE_RATIO,viewHeight*RESIZE_RATIO )];
+    [self.progressUpView setBackgroundColor:[UIColor ColorWithHexString:@"4ab19a"]];
+    
+    int fontSize = 20;
+    marginLeft = 420;
+    marginTop = 136;
+    int labelWidth = 100;
+    self.progressLabel =[[UILabel alloc] initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, labelWidth*RESIZE_RATIO,fontSize*RESIZE_RATIO )];
+    self.progressLabel.text = @"0%";
+    self.progressLabel.font = [UIFont systemFontOfSize:fontSize*RESIZE_RATIO];
+    self.progressLabel.textColor = [UIColor ColorWithHexString:@"4ab19a"];
+    [self addSubview:self.progressBaseView];
+    [self addSubview:self.progressUpView];
+    [self addSubview:self.progressLabel];
+}
+
+-(void)playBtnClick:(id)sender
+{
+    if(nil != self.data)
+    {
+        StoryModel* storyItem =(StoryModel*)self.data;
+        if(!self.playBtn.selected)
+        {
+            [[AudioPlayManager sharedManager]playAItem:storyItem addToListOrNot:YES];
+        }else
+        {
+            [[AudioPlayManager sharedManager] pauseAItem:storyItem];
+        }
+        self.playBtn.selected =!self.playBtn.selected;
+    }
+}
+
+
+@end

@@ -1,0 +1,506 @@
+
+
+#import "SqliteControl.h"
+#define ISBACKUP NO
+#define ISDEFAULTDATA YES
+@implementation SqliteControl
+@synthesize database,isFirstRun;
+static SqliteControl *sharedSqlite = nil;
++(SqliteControl *)sharedController {
+    
+    static dispatch_once_t predicate;
+    dispatch_once(&predicate, ^{
+        sharedSqlite = [[self alloc] init];
+    });
+    
+    return sharedSqlite;
+    
+}
++(id) allocWithZone:(NSZone *)zone
+{
+    @synchronized(self)
+    {
+        if (sharedSqlite == nil)
+        {
+            sharedSqlite = [super allocWithZone:zone];
+            return sharedSqlite;
+        }
+    }
+    return nil;
+}
+- (id)init
+{
+    self = [super init];
+    if (self) {
+        database=[[FMDatabase alloc]init];
+    }
+    return self;
+}
+-(BOOL)openSqlite
+{
+    // app版本
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    
+    NSString *app_Version = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
+    NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentDirectory = [paths objectAtIndex:0];
+    //dbPath： 数据库路径，在Document中。
+    NSLog(@"sqlite path %@",documentDirectory);
+    NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"moviePlayer.db"];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if(![fileManager fileExistsAtPath:dbPath]){
+        NSLog(@"首次运行");
+        
+        isFirstRun=YES;
+
+    }else{
+        NSLog(@"数据库已经存在");
+    }
+    
+   database= [FMDatabase databaseWithPath:dbPath] ;
+    
+    BOOL isCreate=[database open];
+//warning 是否备份
+    if (ISBACKUP) {
+//        [self backUpData];
+        NSLog(@"已通过备份拷贝数据");
+    }
+
+
+    //版本是否更新
+    BOOL isUpdata=[self isAppUpdata];
+    if (isCreate) {
+        NSLog(@"数据库打开");
+        if (isFirstRun) {
+            //首次打开配置sqlite
+            [self firstRunConfigWithSqlite];
+            [self insertTableInfo:@"app_config" tablefield:[NSMutableDictionary dictionaryWithObjectsAndKeys:app_Version,@"app_version",nil]];
+
+        }else{
+            if (isUpdata) {
+                //删除数据库文件，并自调用
+                [fileManager removeItemAtPath:dbPath error:nil];
+                [self openSqlite];
+            }
+
+
+        }
+
+    }else{
+        NSLog(@"数据库未打开");
+        [self openSqlite];
+    }
+    return isFirstRun;
+   
+}
+-(BOOL)isAppUpdata
+{
+    NSDictionary *appOldVersion=[self findTableInfo:@"app_config" tablefield:Nil];
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    NSString *app_Version = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
+    NSLog(@"当前版本号 %@",app_Version);
+    NSLog(@"数据库中版本号 %@",[appOldVersion objectForKey:@"app_version"]);
+    if ([app_Version isEqualToString:[appOldVersion objectForKey:@"app_version"]]) {
+        return NO;
+    }else{
+        return YES;
+    }
+}
+//首次运行，创建表 ，
+//2015年04月15日 创建表并插入初始化数据
+-(BOOL)firstRunConfigWithSqlite
+{
+    if ([self createTableAll] && [self initData]) {
+        return YES;
+    }
+    return NO;
+}
+
+-(BOOL)createTableAll
+{
+    BOOL createAppConfigData=[database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"app_config" dic:[TableModel createAppConfigData]]]];
+    
+    BOOL createStoryInfo=[database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"StoryInfo" dic:[TableModel createStoryInfo]]]];
+    
+    BOOL createCategoryInfo=[database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"CategoryInfo" dic:[TableModel createCategoryInfo]]]];
+    
+    BOOL createDownloadStoryList=[database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"DownloadStoryList" dic:[TableModel createDownloadStoryList]]]];
+    
+    BOOL createDownloadCategoryList=[database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"DownloadCategoryList" dic:[TableModel createDownloadCategoryList]]]];
+    
+    BOOL createPlayListCategory=[database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"PlayListCategory" dic:[TableModel createPlayListCategory]]]];
+    
+    BOOL createPlayList=[database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"PlayList" dic:[TableModel createPlayList]]]];
+    
+    BOOL createPlayStatus=[database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"PlayStatus" dic:[TableModel createPlayStatus]]]];
+    BOOL createHistoryList=[database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"HistoryList" dic:[TableModel createHistoryList]]]];
+
+    
+    
+    BOOL createDailyList = [database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"DailyList" dic:[TableModel createDaily]]]];
+    
+    
+    BOOL test = [database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"test" dic:[TableModel createTest]]]];
+    
+    
+    BOOL CollectStatus = [database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"CollectList" dic:[TableModel CreateCollection]]]];
+    
+    BOOL CustomStatus = [database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"CustomList" dic:[TableModel CreateCustomList]]]];
+    BOOL LunBOStatus = [database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"LunBoList" dic:[TableModel createLunBoList]]]];
+    
+    //2015年04月15日 增加
+     BOOL rawTableStatus = [database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"rawTable" dic:[TableModel createRawTable]]]];
+ 
+    
+    
+      BOOL AlbumStatus = [database executeUpdate:[NSMutableString stringWithFormat:@"%@",[TableModel createlocalUserWithStr:@"albumTable" dic:[TableModel AlbumList]]]];
+    
+       NSLog(@"Create Table Result %d",AlbumStatus);
+    
+    return createStoryInfo&&
+    createAppConfigData&&
+    createCategoryInfo&&
+    createDownloadStoryList&&
+    createDownloadCategoryList&&
+    createPlayListCategory&&
+    createPlayList&&
+    createPlayStatus&&
+    createHistoryList&&
+    createDailyList&&
+    test&&
+    CollectStatus&&
+    CustomStatus&&
+    LunBOStatus&&
+    rawTableStatus&&
+    AlbumStatus;
+}
+
+-(BOOL)insertEmptyKey: (NSString*) rawKey
+{
+    BOOL initResultFlag;
+    //针对日课页面，创建上次请求数据字段
+    NSMutableDictionary* insertDict =[[NSMutableDictionary alloc] initWithCapacity:10];
+    [insertDict setValue:rawKey forKey:@"key"];
+    [insertDict setValue:@"" forKey:@"value"];
+    [insertDict setValue:@"0" forKey:@"version"];
+    initResultFlag &=[[SqliteControl sharedController]insertTableInfo:@"rawTable" tablefield:insertDict];
+    if(YES != initResultFlag)
+    {
+        NSLog(@"init data for %@ failed",rawKey);
+       
+    }
+    return initResultFlag;
+}
+
+-(BOOL)initData
+{
+    BOOL initResultFlag = YES;
+    //针对日课页面，创建上次更新时间字段
+    NSDate* currentDate = [NSDate date];
+    int interval = [currentDate timeIntervalSince1970];
+    NSString *currentDateStr = [NSString stringWithFormat:@"%d", interval];
+    NSMutableDictionary* insertDict =[[NSMutableDictionary alloc] initWithCapacity:10];
+    [insertDict setValue:@"DAILY_LASTUPDATE" forKey:@"key"];
+    [insertDict setValue:currentDateStr forKey:@"value"];
+    [insertDict setValue:@"0" forKey:@"version"];
+    initResultFlag &=[[SqliteControl sharedController]insertTableInfo:@"rawTable" tablefield:insertDict];
+    if(YES != initResultFlag)
+    {
+        NSLog(@"init data for DAILY_LASTUPDATE failed");
+        return initResultFlag;
+    }
+    
+    // 日课的缓存数据
+    initResultFlag &= [self insertEmptyKey:@"DAILY_JSON"];
+    // 启动屏幕的缓存数据
+    initResultFlag &= [self insertEmptyKey:@"SPLASH_CACHE"];
+    // 启动屏幕的缓存数据所对应的日期（本地逻辑，如果日期相同，则不请求服务端）
+    initResultFlag &= [self insertEmptyKey:@"SPLASH_CACHE_DATE"];
+    // 启动屏幕的默认数据
+    initResultFlag &= [self insertEmptyKey:@"SPLASH_DEFAULT"];
+
+    
+    return initResultFlag;
+}
+
+//创建表
+-(BOOL)createTable:(NSString *)tableName tablefield:(NSString *)field
+{
+    NSString *fieldsSql=[NSString stringWithFormat:@"CREATE TABLE %@ ( %@ )",tableName,field];
+    BOOL sucess=[database executeUpdate:fieldsSql];
+    return sucess;
+}
+//插入数据 
+-(BOOL)insertTableInfo:(NSString *)tableName tablefield:(NSMutableDictionary*)field
+{
+    NSArray *arr=[Tools dictionryChangeToInsertString:field];
+//    NSLog(@"arr %@",arr);
+    NSString *arrinsert=[NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",tableName,arr[0],arr[1]];
+    NSLog(@"arr %@",arrinsert);
+    BOOL sucess=[database executeUpdate:arrinsert] ;
+    NSLog(@"insert result %d",sucess);
+    NSLog(@"lastInsertRowId %lli",[database lastInsertRowId]);
+    return sucess;
+}
+
+//插入数据 并得到最后插入的id
+-(int)insertTableInfoGetLastId:(NSString *)tableName tablefield:(NSMutableDictionary*)field
+{
+    NSArray *arr=[Tools dictionryChangeToInsertString:field];
+    //    NSLog(@"arr %@",arr);
+    NSString *arrinsert=[NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",tableName,arr[0],arr[1]];
+//    NSLog(@"arr %@",arrinsert);
+    BOOL sucess=[database executeUpdate:arrinsert] ;
+//    NSLog(@"lastInsertRowId %lli",[database lastInsertRowId]);
+    if ([database lastInsertRowId]&&sucess) {
+        return (int)[database lastInsertRowId];
+        
+    }
+    return 0;
+}
+//更新数据 主键id为查询字段
+-(BOOL)updateTableInfo:(NSString *)tableName tablefield:(NSMutableDictionary *)field
+{
+    NSString *str=[Tools dicChangeToStringForUpdate:field];
+//    NSLog(@"str %@",str);
+    NSString *strUpdate=[NSString stringWithFormat:@"UPDATE %@ SET %@",tableName,str];
+//    NSLog(@"strUpdate %@",strUpdate);
+    BOOL sucess= [database executeUpdate:strUpdate];
+    return sucess;
+}
+//更新数据 主键otherFiled为查询字段
+-(BOOL)updateTableInfo:(NSString *)tableName tablefield:(NSMutableDictionary *)field withOtherField:(NSMutableDictionary *)otherFiled
+{
+    //set字段
+    NSString *setString=[Tools dicChangeToStringForUpdateWithOtherField:field];
+    //where字段
+    NSString *whereOhterFiled=[Tools dicChangeToStringForUpdateWithOtherField:otherFiled];
+    //    NSLog(@"str %@",str);
+    NSString *strUpdate=[NSString stringWithFormat:@"UPDATE %@ SET %@ WHERE %@",tableName,setString,whereOhterFiled];
+    NSLog(@"strUpdate %@",strUpdate);
+    BOOL sucess= [database executeUpdate:strUpdate];
+    return sucess;
+}
+//删除数据 字典 1.all YES 删除所有字段  2. where key = value
+-(BOOL)deleteTableInfo:(NSString *)tableName tablefield:(NSMutableDictionary *)field
+{
+    BOOL sucess;
+    if ([[field objectForKey:@"all"]isEqual:@"YES"]) {
+         sucess=[database executeUpdate:[NSString stringWithFormat:@"DELETE FROM %@ ",tableName]];
+    }else{
+         NSString *str=[Tools dicChangeToStringForDeleteWhere:field];
+        //NSLog(@"str %@",str);
+         sucess=[database executeUpdate:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@",tableName,str]];
+    }
+    return sucess;
+}
+-(BOOL)deleteWithNSString:(NSString *)deleteString
+{
+
+    return [database executeUpdate:deleteString];
+    
+}
+//查询数据 多条数据
+-(NSArray *)selectTableInfo:(NSString *)tableName tablefield:(NSMutableDictionary *)field
+{
+    NSString *fieldsSql=@"";
+    if (field) {
+        fieldsSql=[NSString stringWithFormat:@"WHERE %@",[Tools dicChangeToStringForSelectWhere:field]];
+       
+    }
+//    NSLog(@"field %@",field);
+    FMResultSet *rs=[database executeQuery:[NSString stringWithFormat:@"SELECT * FROM %@ %@ ",tableName,fieldsSql]];
+    NSMutableArray *selectData=[[NSMutableArray alloc]initWithCapacity:10];
+    
+    while ([rs next]) {
+        [selectData addObject:[rs resultDictionary]];
+    }
+    return selectData;
+}
+//查询数据条数
+-(int)CountTableInfo:(NSString *)tableName tablefield:(NSMutableDictionary *)field
+{
+    NSString *fieldsSql=@"";
+    if (field) {
+        fieldsSql=[NSString stringWithFormat:@"WHERE %@",[Tools dicChangeToStringForSelectWhere:field]];
+        
+    }
+//    NSLog(@"field %@",field);
+    FMResultSet *rs=[database executeQuery:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@ ",tableName,fieldsSql]];
+    int countSelect=0;
+    while ([rs next]) {
+        countSelect=[[[rs resultDictionary] objectForKey:@"COUNT(*)"] integerValue];
+    }
+    return countSelect;
+}
+//查询数据条数 根据where语句
+-(int)CountTableInfo:(NSString *)tableName where:(NSString *)where
+{
+//    NSLog(@"field %@",where);
+    NSString *fieldsSql=@"";
+    if (where) {
+        fieldsSql=[NSString stringWithFormat:@"WHERE %@",where];
+        
+    }
+    FMResultSet *rs=[database executeQuery:[NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@ ",tableName,fieldsSql]];
+    int countSelect=0;
+    while ([rs next]) {
+        countSelect=[[[rs resultDictionary] objectForKey:@"COUNT(*)"] integerValue];
+    }
+    return countSelect;
+}
+//查询数据 多条数据 使用排序
+-(NSArray *)selectTableInfo:(NSString *)tableName tablefield:(NSMutableDictionary *)field withDesc:(NSString *)desc
+{
+    NSString *fieldsSql=@"";
+    NSString *descSql=@"";
+    if (field) {
+        fieldsSql=[NSString stringWithFormat:@"WHERE %@",[Tools dicChangeToStringForSelectWhere:field]];
+    }
+    if (desc) {
+        descSql=[NSString stringWithFormat:@"ORDER BY %@",desc];
+    }else{
+        descSql=[NSString stringWithFormat:@"ORDER BY id desc"];
+    }
+//    NSLog(@"field %@",field);
+    FMResultSet *rs=[database executeQuery:[NSString stringWithFormat:@"SELECT * FROM %@ %@ %@",tableName,fieldsSql,descSql]];
+    NSMutableArray *selectData=[[NSMutableArray alloc]initWithCapacity:10];
+    
+    while ([rs next]) {
+        [selectData addObject:[rs resultDictionary]];
+    }
+    return selectData;
+}
+//查询数据 多条数据 使用排序 + limit
+-(NSArray *)selectTableInfo:(NSString *)tableName tablefield:(NSMutableDictionary *)field withDesc:(NSString *)desc limit:(NSString *)limit
+{
+    NSString *fieldsSql=@"";
+    NSString *descSql=@"";
+    if (field) {
+        fieldsSql=[NSString stringWithFormat:@"WHERE %@",[Tools dicChangeToStringForSelectWhere:field]];
+    }
+    if (desc) {
+        descSql=[NSString stringWithFormat:@"ORDER BY %@",desc];
+    }else{
+        descSql=[NSString stringWithFormat:@"ORDER BY id desc"];
+    }
+    //    NSLog(@"field %@",field);
+    NSString *sql=[NSString stringWithFormat:@"SELECT * FROM %@ %@ %@ %@",tableName,fieldsSql,descSql,limit];
+    NSLog(@"sql%@",sql);
+    FMResultSet *rs=[database executeQuery:sql];
+    NSMutableArray *selectData=[[NSMutableArray alloc]initWithCapacity:10];
+    
+    while ([rs next]) {
+        [selectData addObject:[rs resultDictionary]];
+    }
+    return selectData;
+}
+//查询数据 多条数据 使用排序 + limit +自定义where语句
+-(NSArray *)selectTableInfo:(NSString *)tableName whrere:(NSString *)where withDesc:(NSString *)desc limit:(NSString *)limit
+{
+    NSString *fieldsSql=@"";
+    NSString *descSql=@"";
+    if (where) {
+        fieldsSql=[NSString stringWithFormat:@"WHERE %@",where];
+    }
+    if (desc) {
+        descSql=[NSString stringWithFormat:@"ORDER BY %@",desc];
+    }else{
+        descSql=[NSString stringWithFormat:@"ORDER BY id desc"];
+    }
+    //    NSLog(@"field %@",field);
+    NSString *sql=[NSString stringWithFormat:@"SELECT * FROM %@ %@ %@ %@",tableName,fieldsSql,descSql,limit];
+//    NSLog(@"sql%@",sql);
+    FMResultSet *rs=[database executeQuery:sql];
+    NSMutableArray *selectData=[[NSMutableArray alloc]initWithCapacity:10];
+    
+    while ([rs next]) {
+        [selectData addObject:[rs resultDictionary]];
+    }
+    return selectData;
+}
+//查询数据 单条数据
+-(NSDictionary *)findTableInfo:(NSString *)tableName tablefield:(NSMutableDictionary *)field
+{
+    NSMutableString *findstr;
+    if ([field count]>0) {
+        NSString *fieldsSql=[Tools dicChangeToStringForSelectWhere:field];
+        findstr=[NSMutableString stringWithFormat:@"SELECT * FROM %@ WHERE %@ LIMIT 1",tableName,fieldsSql];
+    }else{
+        findstr=[NSMutableString stringWithFormat:@"SELECT * FROM %@ LIMIT 1",tableName];
+    }
+    NSLog(@"findstr  %@",findstr);
+    FMResultSet *rs=[database executeQuery:findstr];
+    NSMutableDictionary *dataDic=[[NSMutableDictionary alloc]initWithCapacity:1];
+    while ([rs next]) {
+        [dataDic setDictionary:[rs resultDictionary]];
+    }
+    return dataDic;
+}
+//查询数据 自写select语句
+-(NSArray *)selectWithNSString:(NSString *)select
+{
+    NSString *sql=[NSString stringWithFormat:@"%@",select];
+
+    FMResultSet *rs=[database executeQuery:sql];
+    NSMutableArray *selectData=[[NSMutableArray alloc]initWithCapacity:10];
+    
+    while ([rs next]) {
+        [selectData addObject:[rs resultDictionary]];
+    }
+    return selectData;
+}
+//查询数据 自写select语句
+-(NSDictionary *)findWithNSString:(NSString *)select
+{
+    NSString *sql=[NSString stringWithFormat:@"%@",select];
+//    NSLog(@"sql,%@",sql);
+    FMResultSet *rs=[database executeQuery:sql];
+    
+    NSMutableDictionary *dataDic=[[NSMutableDictionary alloc]initWithCapacity:1];
+    while ([rs next]) {
+        [dataDic setDictionary:[rs resultDictionary]];
+    }
+    return dataDic;
+}
+-(BOOL)backUpData
+{
+    NSArray *incomePayCountArray=[self selectTableInfo:@"IncomePayCount" tablefield:Nil];
+
+    
+    
+    NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentDirectory = [paths objectAtIndex:0];
+    NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"wangFortuneBackup.db"];
+    NSString *dbPathNew = [documentDirectory stringByAppendingPathComponent:@"wangFortune.db"];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    [fileManager removeItemAtPath:dbPath error:nil];
+    
+    database= [FMDatabase databaseWithPath:dbPath] ;
+    [database open];
+    [self createTableAll];
+    
+    for (NSMutableDictionary *memberdic in incomePayCountArray) {
+        [self insertTableInfo:@"IncomePayCount" tablefield:memberdic];
+    }
+
+    
+    [database close];
+    //    NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    //    NSString *documentDirectory = [paths objectAtIndex:0];
+    //    NSString *dbPathNew = [documentDirectory stringByAppendingPathComponent:@"wangFortune.db"];
+    //    NSFileManager *fileManager = [NSFileManager defaultManager];
+    [fileManager removeItemAtPath:dbPathNew error:nil];
+    
+    database= [FMDatabase databaseWithPath:dbPathNew] ;
+    [database open];
+    [self createTableAll];
+    
+    for (NSMutableDictionary *memberdic in incomePayCountArray) {
+        [self insertTableInfo:@"IncomePayCount" tablefield:memberdic];
+    }
+    
+    return YES;
+}
+
+@end

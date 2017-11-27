@@ -1,0 +1,35 @@
+//
+//  FirstController.h
+//  KaiStory
+//
+//  Created by mac on 15/2/7.
+//  Copyright (c) 2015年 gaoxinfei. All rights reserved.
+//
+
+#import "BaseViewContr.h"
+#import "ImageScrollerView.h"
+#import "albumViewController.h"
+#import "ClassView.h"
+#import "StoryView.h"
+#import "StoryGridView.h"
+
+
+
+@interface FirstController : BaseViewContr<ImageScrollerViewDelegate,StoryDetailListDelegate>{
+UIScrollView *scroll;
+}
+@property (weak, nonatomic) IBOutlet UIImageView *titleImaage;
+- (void)loadData;
+//@property (weak, nonatomic) IBOutlet UIView *titleView;
+@property (nonatomic,strong)albumViewController *albume;
+@property(nonatomic,strong)ImageScrollerView *imagescroll;
+@property(strong,nonatomic)ClassView *m_ClassView;
+@property(strong,nonatomic)StoryView *m_StoryView;
+@property(strong,nonatomic)NSMutableArray* storyGridViewArray;
+//@property(strong,nonatomic)StoryGridView *m_StoryGridView;
+@property(strong,nonatomic)NSMutableArray *m_sortArray;
+
+@property(nonatomic) NSInteger colorIndex;
+@property(strong,nonatomic)NSMutableArray* lunboUrlArray;
+
+@end

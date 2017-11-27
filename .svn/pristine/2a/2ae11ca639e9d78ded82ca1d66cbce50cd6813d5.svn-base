@@ -1,0 +1,33 @@
+//
+//  ShopController.h
+//  KaiStory
+//
+//  Created by mac on 15/2/6.
+//  Copyright (c) 2015年 gaoxinfei. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "BaseViewContr.h"
+//#import "TimePickView.h"
+@interface ShopController : BaseViewContr<UITableViewDelegate,UITableViewDataSource>{
+    UIView *flickView;
+    UIButton *backButon;
+    NSArray * array;
+    UIImageView *images;
+    UILabel *timeLabe;
+    UILabel *mintimeLabe;
+    UIImageView *countimage;
+    UILabel *countLabe;
+    UILabel *selfLabe;
+    UIButton *backButons;
+    NSMutableArray *countArrary;
+}
+
+
+@property (weak, nonatomic) IBOutlet UIButton *customButton;
+
+@property (weak, nonatomic) IBOutlet UIButton *sleepRecomend;
+
+@property (weak, nonatomic) IBOutlet UIButton *mySleepRecomend;
+
+@end

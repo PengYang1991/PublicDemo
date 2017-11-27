@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>8F6D3E94-0ADB-4CAD-BE8E-F45BE4CFFD15</string>
+	<key>IDESourceControlProjectName</key>
+	<string>KaiStory</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>154b3d84-204e-4be7-a78c-ed28618503b6++1480</key>
+		<string>http://182.92.104.102:81/svn/ks_code/ios/KaiStoryBox</string>
+		<key>154b3d84-204e-4be7-a78c-ed28618503b6++1548</key>
+		<string>http://182.92.104.102:81/svn/ks_code/ios/KaiStory</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>KaiStory.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>154b3d84-204e-4be7-a78c-ed28618503b6++1480</key>
+		<string>../..</string>
+		<key>154b3d84-204e-4be7-a78c-ed28618503b6++1548</key>
+		<string>../../../KaiStory</string>
+	</dict>
+	<key>IDESourceControlProjectRepositoryRootDictionary</key>
+	<dict>
+		<key>154b3d84-204e-4be7-a78c-ed28618503b6++1480</key>
+		<string>http://182.92.104.102:81/svn/ks_code</string>
+		<key>154b3d84-204e-4be7-a78c-ed28618503b6++1548</key>
+		<string>http://182.92.104.102:81/svn/ks_code</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>http://182.92.104.102:81/svn/ks_code/ios/KaiStoryBox/KaiStory.xcodeproj</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>154b3d84-204e-4be7-a78c-ed28618503b6++1480</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.subversion</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>154b3d84-204e-4be7-a78c-ed28618503b6++1548</string>
+			<key>IDESourceControlWCCName</key>
+			<string>KaiStory</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.subversion</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>154b3d84-204e-4be7-a78c-ed28618503b6++1480</string>
+			<key>IDESourceControlWCCName</key>
+			<string>KaiStoryBox</string>
+		</dict>
+	</array>
+</dict>
+</plist>

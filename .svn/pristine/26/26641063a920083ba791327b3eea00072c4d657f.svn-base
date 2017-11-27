@@ -1,0 +1,37 @@
+//
+//  BabyFavorController.h
+//  KaiStory
+//
+//  Created by yanzehua on 15/4/27.
+//  Copyright (c) 2015年 gaoxinfei. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "BaseViewContr.h"
+#import "EGORefreshTableHeaderView.h"
+
+@interface BabyFavorController : BaseViewContr<UITableViewDataSource,UITableViewDelegate,EGORefreshTableHeaderDelegate,EGORefreshTableFooterDelegate>
+{
+    EGORefreshTableHeaderView *_refreshHeaderView;
+    BOOL _refreshHeaderFlag;
+    EGORefreshTableFooterView *_refreshFooterView;
+    BOOL _refreshFooterFlag;
+}
+
+@property(assign,nonatomic) NSInteger pageCount;
+
+@property(strong,nonatomic)UIButton* leftBtn;
+@property(strong,nonatomic)UIButton* midBtn;
+@property(strong,nonatomic)UIButton* rightBtn;
+
+@property(nonatomic,assign)int currentTab;
+@property(nonatomic,assign)int leftPage;
+@property(nonatomic,assign)int midPage;
+@property(nonatomic,assign)int rightPage;
+
+@property(strong,nonatomic)UITableView* tableView;
+
+@property(nonatomic,assign)BOOL hasMore;
+@property(nonatomic,assign)NSDate* lastUpdateDate;
+
+@end

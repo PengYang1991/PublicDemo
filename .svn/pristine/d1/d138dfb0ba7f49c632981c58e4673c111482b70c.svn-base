@@ -1,0 +1,271 @@
+//
+//  StoryDetailController.m
+//  KaiStory
+//
+//  Created by yanzehua on 15/5/2.
+//  Copyright (c) 2015年 kaishu. All rights reserved.
+//
+
+#import "StoryDetailController.h"
+#import "UIColor+HexStringToColor.h"
+#import "UIImageView+WebCache.h"
+#import "Tools.h"
+#import "AudioPlayManager.h"
+#import "UserShareInfo.h"
+
+@implementation StoryDetailController
+
+-(void) initLayout
+{
+    self.baseContentView.backgroundColor = [UIColor ColorWithHexString:@"f2f4ee"];
+    
+    int marginTop = 35;
+    int marginLeft = 10;
+    int imgSize = 300;
+    self.baseCoverImg = [[UIImageView alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, imgSize*RESIZE_RATIO, imgSize*RESIZE_RATIO)];
+    [self.baseCoverImg setImage:[UIImage imageNamed:@"defaultCoverBig.jpg"]];
+    
+    self.coverImg = [[UIImageView alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, imgSize*RESIZE_RATIO, imgSize*RESIZE_RATIO)];
+    [self.baseCoverImg setImage:[UIImage imageNamed:@"defaultCoverBig.jpg"]];
+    
+    self.coverFrameImg = [[UIImageView alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, imgSize*RESIZE_RATIO, imgSize*RESIZE_RATIO)];
+    [self.coverFrameImg setImage:[UIImage imageNamed:@"cover_frame"]];
+    
+    marginLeft = 200;
+    marginTop  = 230;
+    int btnSize = 100;
+    self.playBtn = [[UIButton alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, btnSize*RESIZE_RATIO, btnSize*RESIZE_RATIO)];
+    //[self.playBtn setBackgroundColor:[UIColor redColor]];
+    [self.playBtn setImage:[UIImage imageNamed:@"故事详情页-播放.png"] forState:UIControlStateNormal];
+    [self.playBtn setImage:[UIImage imageNamed:@"故事详情页-暂停.png"] forState:UIControlStateSelected];
+    [self.playBtn addTarget:self action:@selector(playBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.baseContentView addSubview:self.baseCoverImg];
+    [self.baseContentView addSubview:self.coverImg];
+    [self.baseContentView addSubview:self.coverFrameImg];
+    [self.baseContentView addSubview:self.playBtn];
+    
+    marginLeft = 340;
+    marginTop  =  56;
+    int fontSize = 30;
+    int labelHeight = 100;
+    int labelWidth = 150;
+    self.authorTag = [[UILabel alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, labelWidth*RESIZE_RATIO, labelHeight*RESIZE_RATIO)];
+    self.authorTag.text = @"作者：";
+    self.authorTag.lineBreakMode = UILineBreakModeWordWrap;
+    self.authorTag.numberOfLines = 1;
+    [self.authorTag sizeToFit];
+    self.authorTag.font = [UIFont systemFontOfSize:fontSize*RESIZE_RATIO];
+    self.authorTag.textColor = [UIColor ColorWithHexString:@"a9a9a9"];
+    [self.baseContentView addSubview:self.authorTag];
+    
+    
+    marginLeft = 340;
+    marginTop  =  150;
+    
+    fontSize = 30;
+    labelWidth = 120;
+    self.publishTag = [[UILabel alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, labelWidth*RESIZE_RATIO, labelHeight*RESIZE_RATIO)];
+    self.publishTag.text = @"出版社：";
+    self.publishTag.lineBreakMode = UILineBreakModeWordWrap;
+    self.publishTag.numberOfLines = 1;
+    [self.publishTag sizeToFit];
+    self.publishTag.font = [UIFont systemFontOfSize:fontSize*RESIZE_RATIO];
+    self.publishTag.textColor = [UIColor ColorWithHexString:@"a9a9a9"];
+    [self.baseContentView addSubview:self.publishTag];
+    
+    
+    marginLeft = 460;
+    marginTop  =  56;
+    fontSize = 30;
+    labelWidth = 150;
+    self.authorLabel = [[UILabel alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, labelWidth*RESIZE_RATIO, labelHeight*RESIZE_RATIO)];
+    //self.authorLabel.backgroundColor = [UIColor redColor];
+    self.authorLabel.text = @"作者名称";
+    self.authorLabel.font = [UIFont systemFontOfSize:fontSize*RESIZE_RATIO];
+    self.authorLabel.lineBreakMode = UILineBreakModeWordWrap;
+    self.authorLabel.numberOfLines = 0;
+    [self.authorLabel sizeToFit];
+    [self.baseContentView addSubview:self.authorLabel];
+    
+    
+    marginLeft = 460;
+    marginTop  =  150;
+    fontSize = 30;
+    labelWidth = 150;
+    self.publishLabel = [[UILabel alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, labelWidth*RESIZE_RATIO, labelHeight*RESIZE_RATIO)];
+    self.publishLabel.text = @"出版社名称";
+    //self.publishLabel.backgroundColor = [UIColor greenColor];
+    self.publishLabel.font = [UIFont systemFontOfSize:fontSize*RESIZE_RATIO];
+    self.publishLabel.lineBreakMode = UILineBreakModeWordWrap;
+    self.publishLabel.numberOfLines = 0;
+    [self.publishLabel sizeToFit];
+    [self.baseContentView addSubview:self.publishLabel];
+    
+    
+    marginLeft = 350;
+    marginTop  = 270;
+    btnSize = 35;
+    self.loveBtn = [[UIButton alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, btnSize*RESIZE_RATIO, btnSize*RESIZE_RATIO)];
+    
+    [self.loveBtn setImage:[UIImage imageNamed:@"详情收藏.png"] forState:UIControlStateNormal];
+    [self.loveBtn setImage:[UIImage imageNamed:@"详情已经收藏.png"] forState:UIControlStateSelected];
+    [self.loveBtn addTarget:self action:@selector(loveBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+    [self.baseContentView addSubview:self.loveBtn];
+
+    marginLeft = 420;
+    marginTop  = 270;
+    btnSize = 35;
+    self.downloadBtn = [[UIButton alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, btnSize*RESIZE_RATIO, btnSize*RESIZE_RATIO)];
+    
+    [self.downloadBtn setImage:[UIImage imageNamed:@"详情下载.png"] forState:UIControlStateNormal];
+    [self.downloadBtn setImage:[UIImage imageNamed:@"详情已经下载.png"] forState:UIControlStateSelected];
+    [self.downloadBtn addTarget:self action:@selector(downloadBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+    [self.baseContentView addSubview:self.downloadBtn];
+    
+    marginLeft = 490;
+    marginTop  = 270;
+    btnSize = 35;
+    self.shareBtn = [[UIButton alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, btnSize*RESIZE_RATIO, btnSize*RESIZE_RATIO)];
+    
+    [self.shareBtn setImage:[UIImage imageNamed:@"详情转发.png"] forState:UIControlStateNormal];
+    [self.shareBtn setImage:[UIImage imageNamed:@"详情转发.png"] forState:UIControlStateSelected];
+    [self.shareBtn addTarget:self action:@selector(shareBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+    [self.baseContentView addSubview:self.shareBtn];
+    
+    marginLeft = 560;
+    marginTop  = 270;
+    btnSize = 35;
+    self.playListBtn = [[UIButton alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, marginTop*RESIZE_RATIO, btnSize*RESIZE_RATIO, btnSize*RESIZE_RATIO)];
+    
+    [self.playListBtn setImage:[UIImage imageNamed:@"详情加入播放列表.png"] forState:UIControlStateNormal];
+    [self.playListBtn setImage:[UIImage imageNamed:@"详情加入播放列表.png"] forState:UIControlStateSelected];
+    [self.playListBtn addTarget:self action:@selector(playListBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+    [self.baseContentView addSubview:self.playListBtn];
+    
+    marginLeft = 0;
+    marginTop = 354;
+    int barHeight = 46;
+    self.detailInfoBar = [[StoryDetailInfoBar alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO,marginTop*RESIZE_RATIO,FRAME_WIDTH,barHeight*RESIZE_RATIO)];
+    [self.baseContentView addSubview:self.detailInfoBar];
+    
+    marginTop = 400;
+    int viewHeight = 200;
+    self.abstractView = [[StoryDetailAbstractView alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO,marginTop*RESIZE_RATIO,FRAME_WIDTH,viewHeight*RESIZE_RATIO)];
+    [self.baseContentView addSubview:self.abstractView];
+}
+
+-(void) setData
+{
+    self.titleLabel.text = self.storyItem.name;
+    [self.coverImg sd_setImageWithURL:[NSURL URLWithString:self.storyItem.cover_url]];
+    self.authorLabel.text = self.storyItem.author;
+    [self.authorLabel sizeToFit];
+    self.publishLabel.text = self.storyItem.publisher;
+    [self.publishLabel sizeToFit];
+    
+    [self.detailInfoBar setModel:self.storyItem];
+    //TODO
+    [self.abstractView setAbstract:self.storyItem.summary];
+    
+    AudioPlayItem* currentPlayItem = [AudioPlayManager sharedManager].currentPlayItem;
+    if(nil != currentPlayItem)
+    {
+    if([self.storyItem.m_id integerValue] == [currentPlayItem.story.m_id integerValue] )
+    {
+        if(currentPlayItem.isPlay)
+        {
+            self.playBtn.selected = YES;
+        }else
+        {
+            self.playBtn.selected = NO;
+        }
+    }
+    }
+    if( [([UserShareInfo sharedSingleton].lovedStoryArray) containsObject: self.storyItem.m_id] )
+    {
+        self.loveBtn.selected = YES;
+    }
+}
+
+- (void)  playListBtnClick:(id)sender
+{
+    [[AudioPlayManager sharedManager] addToPlayList:self.storyItem];
+}
+
+- (void) playBtnClick:(id) sender
+{
+    if(!self.playBtn.selected)
+    {
+        [[AudioPlayManager sharedManager] playAItem:self.storyItem addToListOrNot:YES];
+    }else
+    {
+        [[AudioPlayManager sharedManager] pause];
+    }
+}
+
+- (void) loveBtnClick:(id) sender
+{
+    if(nil != self.storyItem)
+    {
+        if(self.loveBtn.selected)
+        {
+            [[UserShareInfo sharedSingleton] removeLoveStory:self.storyItem.m_id];
+        }else
+        {
+            [[UserShareInfo sharedSingleton] addLoveStory:self.storyItem];
+        }
+        self.loveBtn.selected = ! self.loveBtn.selected;
+    }
+}
+
+- (void) downloadBtnClick:(id) sender
+{
+    NSLog(@"downloadBtn Need to implement");
+}
+
+- (void) shareBtnClick:(id) sender
+{
+    NSLog(@"shareBtn Need to implement");
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self  initLayout];
+    [self setData];
+}
+
+
+-(void)backBtnAction:(id)sender{
+    [self dismissViewControllerAnimated:YES completion:^(){}];
+}
+
+-(void)setDataByNotification:(NSNotification*) info
+{
+    [self setData];
+}
+
+-(void)regObserver
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(setDataByNotification:)  name:@"CURRENT_PLAY_ID" object:nil];
+}
+
+-(void) unRegObserver
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [self regObserver];
+}
+
+-(void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    [self unRegObserver];
+}
+
+@end

@@ -1,0 +1,314 @@
+
+//
+//  FirstController.m
+//  KaiStory
+//
+//  Created by mac on 15/2/7.
+//  Copyright (c) 2015年 yangpeng. All rights reserved.
+//
+
+#import "FirstController.h"
+
+//#import"LoginViewController.h"
+
+
+#import "MyDataService.h"
+#import "Tools.h"
+#import "FindModel.h"
+#import "ImageScrollerView.h"
+#import "UIColor+HexStringToColor.h"
+#import "LoginDataService.h"
+
+#import "ClassViewController.h"
+
+#import "albumViewController.h"
+#import "StoryDetailController.h"
+#import "LunBoWebController.h"
+#import "KSStoryListController.h"
+
+@interface FirstController (){
+    
+}
+
+@end
+@implementation FirstController
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.colorIndex = 0;
+    self.storyGridViewArray = [NSMutableArray array];
+    [self getappid];
+
+    scroll = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 64, FRAME_WIDTH, FRAME_HEIGHT)];
+    NSLog(@"height == %f,width ==%f",FRAME_HEIGHT,FRAME_WIDTH);
+    scroll.contentSize = CGSizeMake(FRAME_WIDTH,FRAME_HEIGHT*2);
+    [self.view addSubview:scroll];
+    
+    self.m_sortArray =[NSMutableArray array];
+    [self loadData];
+}
+
+// 创建轮播
+- (void)creatLunBoView :(NSInteger)aboveHeight ImageArray: (NSMutableArray*) imgArray{
+    
+    UIView* lunBoView = [[UIView alloc]initWithFrame:CGRectMake(0, aboveHeight, FRAME_WIDTH, LunboHeight * RESIZE_RATIO)];
+    ImageScrollerView  *imagescroll = [[ImageScrollerView alloc]initWithFrameRect:CGRectMake(0, 0, lunBoView.bounds.size.width, lunBoView.bounds.size.height) ImageArray: imgArray TitleArray:nil];
+     [lunBoView addSubview:imagescroll];
+     imagescroll.delegate = self;
+    [scroll addSubview:lunBoView];
+}
+
+// 创建分类图
+- (void)creatClassView:(NSInteger)aboveHeight categoryArray:(NSMutableArray*) dataArray{
+    self.m_ClassView = [[ClassView alloc]initWithFrameRect:CGRectMake(0, aboveHeight, FRAME_WIDTH, ClassHeight * RESIZE_RATIO) dataArray:dataArray];
+    self.m_ClassView.m_StoryDetailDelegate = self;
+    [scroll addSubview:self.m_ClassView];
+}
+
+// 创建故事图
+- (void)creatStoryView :(NSInteger)aboveHeight color:(NSString*)color storyArray:(NSMutableArray*) storyArray sortArray:(NSMutableArray*) sortArray Index:(NSInteger)index{
+
+    
+    StoryGridView* storyGridView =[[StoryGridView alloc]initWithFrameRect:CGRectMake(0, aboveHeight, FRAME_WIDTH, StoryHeight * RESIZE_RATIO) color:color story:storyArray sort:sortArray];
+    storyGridView.currentIndex = index;
+    NSLog(@"current==========%ld",storyGridView.currentIndex);
+    storyGridView.rightBtn.tag = index;
+    [storyGridView.rightBtn addTarget:self action:@selector(RightBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+    [storyGridView regObserver];
+    
+    [self.storyGridViewArray addObject:storyGridView];
+    [scroll addSubview:storyGridView ];
+}
+
+
+- (void)loadData{
+          NSMutableDictionary*childDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"fhdskfhd",@"token",@"100",@"user_id",@"sfsdsdf",@"birthday",@"m",@"sex", nil];
+   [MyDataService requestAFURL:@"/res/discover?app_ver=1.0&json_ver=201503100932&lng=&lat=" httpMethod:@"POST" params:childDic data:nil complection:^(id result) {
+       NSString *code = [result objectForKey:@"code"];
+       NSInteger CODE = [code integerValue];
+       if (CODE==200) {
+           NSDictionary *dics = [result objectForKey:@"result"];
+           NSArray *arrary = [dics objectForKey:@"discover_content"];
+           
+//           NSMutableArray* dataArrary = [NSMutableArray array];
+           int aboveHeight = 0;
+           NSInteger index=0;
+           for (NSInteger i=0; i<arrary.count; i++) {
+               NSDictionary *dics = [arrary objectAtIndex:i];
+               NSString *show_type = [dics objectForKey:@"show_type"];
+               NSLog(@"显示类型==%@",show_type);
+               
+               if ([show_type isEqualToString:@"轮播"]) {
+                   NSDictionary *showData = [dics objectForKey:@"show_data"];//轮播；
+                   NSArray *slider = [showData objectForKey:@"slide_list"];
+                   NSMutableArray* imgArray = [[NSMutableArray alloc] init];
+                   self.lunboUrlArray = [[NSMutableArray alloc]init];
+                   for (NSDictionary *itemDic in slider) {
+                       LunBoModel*lunboModel = [[LunBoModel alloc]initWithDict:itemDic];
+                       NSString *imageurl = lunboModel.img;
+                       [self.lunboUrlArray addObject:lunboModel.open_url];
+                       [imgArray addObject:imageurl];
+                   }
+                   [self creatLunBoView:aboveHeight ImageArray:imgArray];
+                   aboveHeight += (LunboHeight*RESIZE_RATIO);
+                   
+               }else if ([show_type isEqualToString:@"显示分类列表"]){
+                   NSDictionary *showData = [dics objectForKey:@"show_data"];
+                   NSArray *categorys = [showData objectForKey:@"category_list"];//分类列表
+                   NSMutableArray* cateArray = [[NSMutableArray alloc] init];
+                   for (NSDictionary *category in categorys) {
+                       FindModel *findemodel = [[FindModel alloc]initWithDict:category];
+                       [cateArray addObject:findemodel];
+                   }
+                   [self creatClassView:aboveHeight categoryArray:cateArray];
+                   aboveHeight += (ClassHeight*RESIZE_RATIO);
+               }else if([show_type isEqualToString:@"故事列表"])
+               {
+                   NSMutableArray* storyArray  =[NSMutableArray array];
+                   NSMutableArray* sortArray  =[NSMutableArray array];
+                   NSDictionary *showDataStory = [dics objectForKey:@"show_data"];//故事
+                   NSString *bgcolor = [showDataStory objectForKey:@"bg_color"];
+                   NSLog(@"bgcolor==%@",bgcolor);
+                   StoryItem *storyModel = [[StoryItem alloc]initWithDict:showDataStory];
+                   [storyArray addObject:storyModel];
+                   NSLog(@"findModel==%lu",(unsigned long)storyArray.count);
+                   
+                   NSArray *sort_media_list =  storyModel.media_list;
+                   NSLog(@"media==%lu",(unsigned long)sort_media_list.count);
+                   //故事数目
+                  for (NSDictionary *sort_media in sort_media_list) {
+                       NSLog(@"sort======%lu",(unsigned long)sort_media.count);
+                       StoryModel *mediaModel = [[StoryModel alloc]initWithDict:sort_media];
+                      [sortArray addObject:mediaModel];
+
+                      //NSLog(@"Select Cache Json %@",[Tools getCacheJson:mediaKey]);
+                   }
+                   if(self.colorIndex%2 == 0)
+                   {
+                       bgcolor = @"ffffff";
+                   }else
+                   {
+                       bgcolor = @"e3f2ed";
+                   }
+                   self.colorIndex += 1;
+                   [self creatStoryView:aboveHeight color:bgcolor storyArray: storyArray sortArray:sortArray Index:index];
+                   [self.m_sortArray addObject:storyArray];
+                   aboveHeight += (StoryHeight*RESIZE_RATIO);
+                   index = index +1;
+               }
+               
+           }
+           scroll .contentSize = CGSizeMake(FRAME_WIDTH,aboveHeight+100);
+       }else if(CODE == 102){
+           NSLog(@"参数错误，为空格式错误等");
+           
+       }
+       else if (CODE == 500){
+           
+           NSLog(@"服务器错误");
+           
+       }
+
+    }];
+
+    
+}
+
+#pragma lunBo跳转的协议方法
+
+-(void)EScrollerViewDidClicked:(NSUInteger)index andPages:(NSInteger)pages;{
+    index = (index+1)%self.lunboUrlArray.count;
+    //NSLog(@"lunbo %d %@",index,[self.lunboUrlArray objectAtIndex:index]);
+    //TODO:1,轮播的图片是否同内容绑定了
+    LunBoWebController *webController = [[LunBoWebController alloc]initWithConfig:@"" withBackBtn:YES withFootBar:YES];
+    webController.destUrl = [self.lunboUrlArray objectAtIndex:index];
+    [self presentViewController:webController animated:YES completion:^{}];
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    
+}
+
+-(void)EnterStoryDetail:(NSArray*)DataSource category:(CategoryModel *)categorymodel{
+    NSLog(@"DataSource======%lu",(unsigned long)DataSource.count);
+    /*
+    StoryListControllerViewController *con  = [[StoryListControllerViewController alloc]init];
+    con.m_DataSource = [DataSource mutableCopy];
+    con.categorymodel = categorymodel;
+    [self.navigationController pushViewController:con animated:YES];
+     */
+}
+
+//获取appid
+- (void)getappid{
+    
+[LoginDataService requestAFURL:@"/sys/appid?app_ver=1.0&json_ver=&lng=&lat=" httpMethod:@"GET" params:nil data:nil complection:^(id result) {
+    
+    NSLog(@"re==========%@",result);
+    NSString *code = [result objectForKey:@"code"];
+    NSInteger CODE = [code integerValue];
+    if (CODE==200) {
+        
+        NSDictionary*dic = [result objectForKey:@"result"];
+        
+        NSString *appid = [dic objectForKey:@"appid"];
+        NSLog(@"sbdfdjshb===%@",appid);
+        NSUserDefaults *userfault = [NSUserDefaults standardUserDefaults];
+        [userfault setObject:appid forKey:@"APPID"];
+        [userfault synchronize];
+        
+    }else if(CODE == 102){
+        NSLog(@"参数错误，为空格式错误");
+    
+    }
+    else if (CODE == 500){
+    
+        NSLog(@"服务器错误");
+    
+    }
+}];
+    }
+
+
+
+//}
+-(void)EnterClassList
+{
+    ClassViewController *contr = [[ClassViewController alloc]initWithConfig:@"分类" withBackBtn:YES withFootBar:YES];
+    [self presentViewController:contr animated:YES completion:^{}];
+}
+
+
+-(void)EnterAlbumList:(FindModel *)AlbumModel
+{
+    NSString *open_type = AlbumModel.open_type;
+    NSString *media_detail_view = @"media_detail_view";
+    NSString *ablum_list_view = @"ablum_list_view";
+    NSString *category_media_list_view = @"category_media_list_view";
+    NSString *play_view = @"play_view";
+    if ([open_type isEqualToString:ablum_list_view])
+    {
+        albumViewController * con =[[albumViewController alloc]initWithConfig:@"专辑列表" withBackBtn:YES];
+        con.albumModel = AlbumModel;
+        [self.navigationController pushViewController:con animated:YES];
+    }
+    if ([open_type isEqualToString:category_media_list_view])
+    {
+        KSStoryListController* controller = [[KSStoryListController alloc]initWithConfig:AlbumModel.name withBackBtn:YES withFootBar:YES];
+       
+        NSDictionary *tempDict = [Tools dictionaryWithJsonString: AlbumModel.open_params];
+        controller.categoryIDStr = [tempDict objectForKey:@"cid"];
+        
+        controller.requestUrl = AlbumModel.open_url;
+        controller.requestParams = AlbumModel.open_params;
+        [self presentViewController:controller animated:YES completion:^{}];
+    }
+    if ([open_type isEqualToString:play_view])
+    {
+        
+    }
+    if ([open_type isEqualToString:media_detail_view])
+    {
+        StoryDetailController *contr = [[StoryDetailController alloc]initWithConfig:AlbumModel.name withBackBtn:YES];
+        [self.navigationController pushViewController:contr animated:YES];
+    }
+    NSLog(@"open_type======%@",open_type);   
+}
+
+
+-(void)RightBtnClick:(id)sender
+{
+    UIButton *btn = (UIButton *)sender;
+    
+    NSMutableArray *temp = [self.m_sortArray objectAtIndex:btn.tag];
+    StoryItem * tt = [temp objectAtIndex:0];
+    NSString *URL = [tt.right_item objectForKey:@"open_url"];
+    NSString *params = [tt.right_item objectForKey:@"open_params"];
+    NSString *Name = [tt.left_item objectForKey:@"text"];
+    
+    KSStoryListController* controller = [[KSStoryListController alloc]initWithConfig:Name withBackBtn:YES withFootBar:YES];
+    controller.requestUrl = URL;
+    controller.requestParams = params;
+    [self presentViewController:controller animated:YES completion:^{}];
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    NSLog(@"firstWillAppear %ld",self.storyGridViewArray.count);
+    [super viewWillAppear:animated];
+    for (StoryGridView* viewItem in self.storyGridViewArray
+         ) {
+        [viewItem updateState];
+        [viewItem regObserver];
+    }
+}
+// 在消失时移除所有的注册事件
+-(void)viewWillDisappear:(BOOL)animated
+{
+    NSLog(@"firstWillDisAppear %ld",self.storyGridViewArray.count);
+    [super viewWillDisappear:animated];
+    for (StoryGridView* viewItem in self.storyGridViewArray
+         ) {
+        [viewItem unRegObserver];
+    }
+}
+@end

@@ -1,0 +1,20 @@
+//
+//  LunBoWebController.h
+//  KaiStory
+//
+//  Created by yanzehua on 15/5/8.
+//  Copyright (c) 2015年 kaishu. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import "BaseViewContr.h"
+
+@interface LunBoWebController : BaseViewContr<UIWebViewDelegate>
+
+@property NSString* destUrl;
+@property (strong,nonatomic)UIWebView *webView;
+
+
+- (IBAction)BackAction:(id)sender;
+
+@end

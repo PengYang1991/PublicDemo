@@ -1,0 +1,170 @@
+//
+//  TodayDailyView.m
+//  KaiStory
+//
+//  Created by yanzehua on 15/4/13.
+//  Copyright (c) 2015年 gaoxinfei. All rights reserved.
+//
+
+#import "TodayDailyView.h"
+#import "UIColor+HexStringToColor.h"
+#import "Tools.h"
+#import "UIImageView+AFNetworking.h"
+#import "UIImageView+WebCache.h"
+
+@implementation TodayDailyView
+
+@synthesize ClickBtn;
+
+- (void) initConst
+{
+     readPrefix = @"阅读 %@";
+     commentPrefix = @"评论 %@";
+     sharePrefix = @"分享 %@";
+     favorPrefix = @"喜欢 %@";
+}
+
+- (void)initLayout:(CGRect)frame
+{
+    int WIDTH = frame.size.width;
+    int HEIGHT = frame.size.height;
+    
+    if (self) {
+        
+        int const marginLeft = 20;
+        int const marginRight = 20;
+        
+        // 标题区域
+        int const titleMarginTop = 26;
+        int const titleFontSize = 30;
+        NSString *titleFontColor = @"808080";
+        self.todayName =[[UILabel alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, titleMarginTop*RESIZE_RATIO, WIDTH-(marginLeft+marginRight)*RESIZE_RATIO, titleFontSize*RESIZE_RATIO)];
+        self.todayName.font =  [UIFont boldSystemFontOfSize:titleFontSize*RESIZE_RATIO];
+        UIColor *todayNameColor = [UIColor ColorWithHexString:titleFontColor];
+        self.todayName.textColor = todayNameColor;
+        [self addSubview:self.todayName];
+        
+        // 发布时间区域
+        int const timeMarginTop = 8;
+        int const timeTop = titleMarginTop + titleFontSize + timeMarginTop;
+        NSString *timeFontColor =@"4ab19a";
+        int const timeFontSize = 20;
+        self.todayTime = [[UILabel alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, timeTop*RESIZE_RATIO, WIDTH-(marginLeft+marginRight)*RESIZE_RATIO, timeFontSize*RESIZE_RATIO)];
+        self.todayTime.font =  [UIFont boldSystemFontOfSize:timeFontSize*RESIZE_RATIO];
+        UIColor *todayTimeColor = [UIColor ColorWithHexString:timeFontColor];
+        self.todayTime.textColor = todayTimeColor;
+        [self addSubview:self.todayTime];
+        
+        // 头图的图像区域
+        int const imgMarginTop = 10;
+        int const imgTop = timeTop + timeFontSize + imgMarginTop;
+        int const imgHeight = 328;
+        self.todayImage =[[UIImageView alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, imgTop*RESIZE_RATIO, WIDTH-(marginLeft+marginRight)*RESIZE_RATIO, imgHeight*RESIZE_RATIO)];
+        self.todayImage.contentMode = UIViewContentModeScaleAspectFill;
+        self.todayImage.clipsToBounds  = YES;
+        [self addSubview:self.todayImage];
+        
+        
+        // 展示内容区域
+        int const infoRegionMarginTop = 26;
+        int const infoTop = imgTop + imgHeight + infoRegionMarginTop;
+        int const infoIconSize = 20;
+        int const infoTxtWidth = 100;
+        int const infoTxtFontSize = 16;
+        NSString* infoTxtFontColor = @"9d9e9e";
+        UIColor *infoFontColor = [UIColor ColorWithHexString:infoTxtFontColor];
+        int const infoIconMarginRight = 10;
+        
+        self.readIcon = [[UIImageView alloc]initWithFrame:CGRectMake(marginLeft*RESIZE_RATIO, infoTop*RESIZE_RATIO, infoIconSize*RESIZE_RATIO, infoIconSize*RESIZE_RATIO)];
+        [self.readIcon setImage:[UIImage imageNamed:@"阅读.png"]];
+        [self addSubview:self.readIcon];
+        
+        int const readTxtMarginLeft = marginLeft + infoIconSize + infoIconMarginRight;
+        self.read_count =[[UILabel alloc]initWithFrame:CGRectMake(readTxtMarginLeft*RESIZE_RATIO, infoTop*RESIZE_RATIO, infoTxtWidth * RESIZE_RATIO, infoTxtFontSize*RESIZE_RATIO)];
+        self.read_count.text = [NSString stringWithFormat:readPrefix,@"0"];
+        self.read_count.font =  [UIFont boldSystemFontOfSize:infoTxtFontSize*RESIZE_RATIO];
+        self.read_count.textColor = infoFontColor;
+        [self addSubview:self.read_count];
+        
+        
+        int const commentIconMarginLeft = 178;
+        self.commentIcon =[[UIImageView alloc]initWithFrame:CGRectMake(commentIconMarginLeft*RESIZE_RATIO, infoTop*RESIZE_RATIO, infoIconSize*RESIZE_RATIO, infoIconSize*RESIZE_RATIO)];
+        [self.commentIcon setImage:[UIImage imageNamed:@"评论1.png"] ];
+        [self addSubview:self.commentIcon];
+        
+        int const commentTxtMarginLeft = commentIconMarginLeft + infoIconSize + infoIconMarginRight;
+        self.comment_count =[[UILabel alloc]initWithFrame:CGRectMake(commentTxtMarginLeft*RESIZE_RATIO, infoTop*RESIZE_RATIO, infoTxtWidth * RESIZE_RATIO, infoTxtFontSize*RESIZE_RATIO)];
+        self.comment_count.text = [NSString stringWithFormat:commentPrefix,@"0"];
+        self.comment_count.font =  [UIFont boldSystemFontOfSize:infoTxtFontSize*RESIZE_RATIO];
+        self.comment_count.textColor = infoFontColor;
+        [self addSubview:self.comment_count];
+        
+        
+        int const shareIconMarginLeft = 334;
+        self.shareIcon =[[UIImageView alloc]initWithFrame:CGRectMake(shareIconMarginLeft*RESIZE_RATIO, infoTop*RESIZE_RATIO, infoIconSize*RESIZE_RATIO, infoIconSize*RESIZE_RATIO)];
+        [self.shareIcon setImage:[UIImage imageNamed:@"转发.png"] ];
+        [self addSubview:self.shareIcon];
+        
+        int const shareTxtMarginLeft = shareIconMarginLeft + infoIconSize + infoIconMarginRight;
+        self.share_count =[[UILabel alloc]initWithFrame:CGRectMake(shareTxtMarginLeft*RESIZE_RATIO, infoTop*RESIZE_RATIO, infoTxtWidth * RESIZE_RATIO, infoTxtFontSize*RESIZE_RATIO)];
+        self.share_count.text = [NSString stringWithFormat:sharePrefix,@"0"];
+        self.share_count.font =  [UIFont boldSystemFontOfSize:infoTxtFontSize*RESIZE_RATIO];
+        self.share_count.textColor = infoFontColor;
+        [self addSubview:self.share_count];
+        
+        
+        int const favorIconMarginLeft = 496;
+        self.favorIcon =[[UIImageView alloc]initWithFrame:CGRectMake(favorIconMarginLeft*RESIZE_RATIO, infoTop*RESIZE_RATIO, infoIconSize*RESIZE_RATIO, infoIconSize*RESIZE_RATIO)];
+        [self.favorIcon setImage:[UIImage imageNamed:@"喜欢.png"] ];
+        [self addSubview:self.favorIcon];
+        
+        int const favorTxtMarginLeft = favorIconMarginLeft + infoIconSize + infoIconMarginRight;
+        self.favor_count =[[UILabel alloc]initWithFrame:CGRectMake(favorTxtMarginLeft*RESIZE_RATIO, infoTop*RESIZE_RATIO, infoTxtWidth * RESIZE_RATIO, infoTxtFontSize*RESIZE_RATIO)];
+        self.favor_count.text = [NSString stringWithFormat:favorPrefix,@"0"];
+        self.favor_count.font =  [UIFont boldSystemFontOfSize:infoTxtFontSize*RESIZE_RATIO];
+        self.favor_count.textColor = infoFontColor;
+        [self addSubview:self.favor_count];
+        
+        
+        self.ClickBtn  = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, WIDTH, HEIGHT)];
+        [self addSubview:self.ClickBtn];
+    }
+
+}
+
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    self.userInteractionEnabled = YES;
+    
+    [self initConst];
+    [self initLayout:frame];
+    return self;
+}
+
+
+-(void)setTodayInfo:(DailyModel*) todayModel{
+    self.todayModel = todayModel;
+    self.todayName.text = todayModel.title;
+    [self.todayImage sd_setImageWithURL:[NSURL URLWithString:todayModel.img_url]];
+    self.todayTime.text = todayModel.release_date;
+    if ( [Tools isBlankString:todayModel.read_count]) {
+       todayModel.read_count = @"0";
+    }
+    if ( [Tools isBlankString:todayModel.comment_count]) {
+        todayModel.comment_count = @"0";
+    }
+    if ( [Tools isBlankString:todayModel.share_count]) {
+       todayModel.share_count = @"0";
+    }
+    if ( [Tools isBlankString:todayModel.favor_count]) {
+        todayModel.favor_count = @"0";
+    }
+    self.read_count.text = [NSString stringWithFormat:readPrefix,todayModel.read_count];
+    self.comment_count.text = [NSString stringWithFormat:commentPrefix,todayModel.comment_count];
+    self.share_count.text = [NSString stringWithFormat:sharePrefix,todayModel.share_count];
+    self.favor_count.text = [NSString stringWithFormat:favorPrefix,todayModel.favor_count];
+}
+
+@end
